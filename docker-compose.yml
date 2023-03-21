@@ -1,0 +1,59 @@
+version: '3.7'
+
+services:
+
+  mysql:
+    image: mysql:8.0.30-debian
+    restart: always
+    ports:
+      - "3306:3306"
+    networks:
+      - ftp-network
+    volumes:
+      - mysql-data-volume:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_USER: admin
+      MYSQL_PASSWORD: admin
+      MYSQL_DATABASE: ftp
+    healthcheck:
+      test: mysqladmin ping -h 127.0.0.1 -u $$MYSQL_USER --password=admin
+      timeout: 20s
+      retries: 10
+
+  ftp-server:
+    build: .
+    image: ftp-server/ftp-server:latest
+    restart: always
+    ports:
+      - "2121:2121"
+      - "2122-2199:2122-2199"
+      - "5005:5005"
+    links:
+      - "mysql:mysql"
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - ftp-network
+    volumes:
+      - ftp-server-data-volume:/home/ftp-server
+    environment:
+      FTP_SERVER_USERNAME: admin
+      FTP_SERVER_PASSWORD: admin
+      FTP_SERVER_TYPE: s3
+      FTP_SERVER_BUCKET_URL: ${FTP_SERVER_BUCKET_URL}
+      MYSQL_HOST: mysql
+      MYSQL_DATABASE: ftp
+      MYSQL_USERNAME: admin
+      MYSQL_PASSWORD: admin
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+      JAVA_OPTS: ${JAVA_OPTS}
+
+volumes:
+  mysql-data-volume:
+  ftp-server-data-volume:
+
+networks:
+  ftp-network:

@@ -1,0 +1,30 @@
+spring:
+  application:
+    name: ftp-server
+  datasource:
+    url: jdbc:mysql://${MYSQL_HOST}:${MYSQL_PORT:3306}/${MYSQL_DATABASE}?allowPublicKeyRetrieval=true&autoReconnect=true&useSSL=false
+    username: ${MYSQL_USERNAME}
+    password: ${MYSQL_PASSWORD}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
+  flyway:
+    url: jdbc:mysql://${MYSQL_HOST}:${MYSQL_PORT:3306}/${MYSQL_DATABASE}?allowPublicKeyRetrieval=true&autoReconnect=true&useSSL=false
+    user: ${MYSQL_USERNAME}
+    password: ${MYSQL_PASSWORD}
+    schemas: ${MYSQL_DATABASE}
+    locations: classpath:/db
+    check-location: false
+
+ftp:
+  server:
+    admin:
+      username: ${FTP_SERVER_USERNAME:admin}
+      password: ${FTP_SERVER_PASSWORD:admin}
+    port: 2121
+    type: ${FTP_SERVER_TYPE:s3} # Supported the following types: s3, local
+    bucketUrl: ${FTP_SERVER_BUCKET_URL}
+    localHomeDirectory: /home/ftp-server
+    max-logins: ${FTP_SERVER_MAX_LOGINS:100}

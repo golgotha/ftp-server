@@ -1,0 +1,62 @@
+import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage
+
+plugins {
+    id 'java'
+    id 'org.springframework.boot' version '2.7.2'
+    id 'io.spring.dependency-management' version '1.0.13.RELEASE'
+    id "com.bmuschko.docker-java-application" version "7.2.0"
+}
+
+group 'com.github.golgotha'
+version '1.0-SNAPSHOT'
+
+ext {
+    dockerPrefix = 'ftp-server'
+    dockerPath = '.'
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter'
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+
+    implementation 'org.apache.ftpserver:ftpserver-core:1.2.0'
+    implementation 'com.github.abashev:vfs-s3:4.3.6'
+    implementation 'commons-io:commons-io:2.11.0'
+
+    implementation 'org.flywaydb:flyway-core:8.5.12'
+    implementation "org.flywaydb:flyway-mysql"
+
+    annotationProcessor "org.projectlombok:lombok"
+    compileOnly "org.projectlombok:lombok"
+    testCompileOnly "org.projectlombok:lombok"
+
+    runtimeOnly 'mysql:mysql-connector-java'
+
+    annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
+
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+}
+
+test {
+    useJUnitPlatform()
+}
+
+jar {
+    enabled = false
+}
+
+bootJar {
+    archiveFileName = project.name + ".jar"
+}
+
+task docker(type: DockerBuildImage) {
+    dependsOn build
+    inputDir = file(project.ext.dockerPath)
+    images.add("${project.ext.dockerPrefix}/${project.name}:${project.version}")
+    images.add("${project.ext.dockerPrefix}/${project.name}")
+}
